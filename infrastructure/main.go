@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/dynamodb"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -152,42 +155,6 @@ func main() {
 			return err
 		}
 
-		// Create an EC2 instance
-		instance, err := ec2.NewInstance(ctx, "flink-ddb-instance", &ec2.InstanceArgs{
-			InstanceType:        pulumi.String("t3.medium"),
-			Ami:                 pulumi.String(ami.Id),
-			SubnetId:            subnet.ID(),
-			VpcSecurityGroupIds: pulumi.StringArray{sg.ID()},
-			KeyName:             pulumi.String("keypair-sandbox0-sin-mymac.pem"),
-			Tags: pulumi.StringMap{
-				"Name": pulumi.String("flink-ddb-instance"),
-			},
-			UserData: pulumi.String(`#!/bin/bash
-# Install Docker
-sudo dnf update -y
-sudo dnf install -y docker
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker ec2-user
-
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Install Java 11
-sudo dnf install -y java-11-amazon-corretto-devel
-
-# Install Git
-sudo dnf install -y git
-
-# Create directory for Flink
-mkdir -p /home/ec2-user/flink-ddb-lab
-`),
-		})
-		if err != nil {
-			return err
-		}
-
 		// Create a DynamoDB table for product catalog
 		productTable, err := dynamodb.NewTable(ctx, "product-catalog", &dynamodb.TableArgs{
 			Attributes: dynamodb.TableAttributeArray{
@@ -202,6 +169,116 @@ mkdir -p /home/ec2-user/flink-ddb-lab
 			Tags: pulumi.StringMap{
 				"Name": pulumi.String("product_catalog"),
 			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an IAM role for the EC2 instance
+		role, err := iam.NewRole(ctx, "flink-ddb-instance-role", &iam.RoleArgs{
+			AssumeRolePolicy: pulumi.String(`{
+				"Version": "2012-10-17",
+				"Statement": [{
+					"Action": "sts:AssumeRole",
+					"Principal": {
+						"Service": "ec2.amazonaws.com"
+					},
+					"Effect": "Allow",
+					"Sid": ""
+				}]
+			}`),
+			Tags: pulumi.StringMap{
+				"Name": pulumi.String("flink-ddb-instance-role"),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an IAM policy for DynamoDB access
+		policy, err := iam.NewPolicy(ctx, "flink-ddb-policy", &iam.PolicyArgs{
+			Policy: productTable.Arn.ApplyT(func(arn string) string {
+				return fmt.Sprintf(`{
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Action": [
+							"dynamodb:BatchGetItem",
+							"dynamodb:BatchWriteItem",
+							"dynamodb:PutItem",
+							"dynamodb:DeleteItem",
+							"dynamodb:GetItem",
+							"dynamodb:Scan",
+							"dynamodb:Query",
+							"dynamodb:UpdateItem"
+						],
+						"Effect": "Allow",
+						"Resource": "%s"
+					}]
+				}`, arn)
+			}).(pulumi.StringOutput),
+			Tags: pulumi.StringMap{
+				"Name": pulumi.String("flink-ddb-policy"),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// Attach the policy to the role
+		_, err = iam.NewRolePolicyAttachment(ctx, "flink-ddb-policy-attachment", &iam.RolePolicyAttachmentArgs{
+			Role:      role.Name,
+			PolicyArn: policy.Arn,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an instance profile for the role
+		instanceProfile, err := iam.NewInstanceProfile(ctx, "flink-ddb-instance-profile", &iam.InstanceProfileArgs{
+			Role: role.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an EC2 instance with the instance profile
+		instance, err := ec2.NewInstance(ctx, "flink-ddb-instance", &ec2.InstanceArgs{
+			InstanceType:        pulumi.String("t3.medium"),
+			Ami:                 pulumi.String(ami.Id),
+			SubnetId:            subnet.ID(),
+			VpcSecurityGroupIds: pulumi.StringArray{sg.ID()},
+			KeyName:             pulumi.String("keypair-sandbox0-sin-mymac.pem"),
+			IamInstanceProfile:  instanceProfile.Name,
+			Tags: pulumi.StringMap{
+				"Name": pulumi.String("flink-ddb-instance"),
+			},
+			UserData: pulumi.String(`#!/bin/bash
+# Set the hostname
+sudo hostnamectl set-hostname flink-ddb-instance
+
+# Install Docker
+sudo dnf update -y
+sudo dnf install -y docker
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker ec2-user
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Install Java 11
+sudo dnf install -y java-11-amazon-corretto-devel
+
+# Install Python 3 and pip
+sudo dnf install -y python3 python3-pip
+
+# Install Git
+sudo dnf install -y git
+
+# Create directory for Flink
+mkdir -p /home/ec2-user/flink-ddb-lab
+`),
 		})
 		if err != nil {
 			return err
