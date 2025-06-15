@@ -244,6 +244,62 @@ This lab demonstrates how to use DynamoDB as a dimension table in Flink SQL usin
 3. Perform dimension table lookups and joins
 4. Optimize the connector configuration for performance
 
+## DynamoDB Connector Limitation and Workaround
+
+### Limitation
+
+During the implementation of this lab, we discovered an important limitation of the official Flink DynamoDB connector (v4.0.0-1.16):
+
+```
+org.apache.flink.table.api.ValidationException: Connector 'dynamodb' can only be used as a sink. It cannot be used as a source.
+```
+
+The official DynamoDB connector only supports writing data to DynamoDB (as a sink) and does not support reading data from DynamoDB (as a source or dimension table). This limitation prevents us from using DynamoDB as a dimension table in Flink SQL joins directly.
+
+### Custom Solution
+
+To overcome this limitation, we implemented a custom DynamoDB lookup table source that allows using DynamoDB as a dimension table in Flink SQL:
+
+1. **Custom Components**:
+   - `DynamoDBLookupOptions`: Configuration options for the DynamoDB lookup source
+   - `DynamoDBLookupFunction`: Implements the lookup functionality using AWS SDK
+   - `DynamoDBLookupTableSource`: Defines the table source for Flink SQL
+   - `DynamoDBLookupTableSourceFactory`: Creates instances of the table source
+
+2. **How It Works**:
+   - Registers a custom connector named `dynamodb-lookup`
+   - Uses the AWS SDK to query DynamoDB directly
+   - Implements caching to improve performance
+   - Converts DynamoDB items to Flink's internal row format
+
+3. **Usage**:
+   ```sql
+   CREATE TABLE product_catalog (
+     product_id STRING,
+     category STRING,
+     name STRING,
+     description STRING,
+     price DOUBLE,
+     inventory_status STRING,
+     supplier_id STRING,
+     last_updated STRING,
+     PRIMARY KEY (product_id) NOT ENFORCED
+   ) WITH (
+     'connector' = 'dynamodb-lookup',
+     'table-name' = 'product-catalog-43c2419',
+     'aws.region' = 'ap-southeast-1',
+     'lookup.cache.max-rows' = '10000',
+     'lookup.cache.ttl' = '300000'
+   );
+   ```
+
+4. **Build and Deploy**:
+   ```bash
+   ./build_and_deploy.sh
+   ```
+
+This custom solution enables the use of DynamoDB as a dimension table in Flink SQL joins, allowing for real-time enrichment of streaming data with reference data stored in DynamoDB.
+
 ## References
 
 - [Apache Flink Documentation](https://nightlies.apache.org/flink/flink-docs-release-1.16/)
