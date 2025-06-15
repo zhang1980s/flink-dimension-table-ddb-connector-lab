@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  jobmanager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: flink-jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - AWS_REGION=ap-southeast-1
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    volumes:
+      - ../data:/opt/flink/data
+      - ../flink-job/src/main/resources/flink-sql:/opt/flink/sql
+    networks:
+      - flink-network
+
+  taskmanager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: flink-taskmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - AWS_REGION=ap-southeast-1
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    volumes:
+      - ../data:/opt/flink/data
+      - ../flink-job/src/main/resources/flink-sql:/opt/flink/sql
+    networks:
+      - flink-network
+
+networks:
+  flink-network:
+    driver: bridge

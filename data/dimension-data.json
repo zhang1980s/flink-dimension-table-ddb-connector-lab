@@ -1,0 +1,102 @@
+[
+  {
+    "product_id": "P001",
+    "category": "Electronics",
+    "name": "Smartphone X",
+    "description": "Latest smartphone with advanced features",
+    "price": 799.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S001",
+    "last_updated": "2023-06-01T10:00:00Z"
+  },
+  {
+    "product_id": "P002",
+    "category": "Electronics",
+    "name": "Laptop Pro",
+    "description": "High-performance laptop for professionals",
+    "price": 1299.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S002",
+    "last_updated": "2023-06-02T09:30:00Z"
+  },
+  {
+    "product_id": "P003",
+    "category": "Home Appliances",
+    "name": "Smart Refrigerator",
+    "description": "Energy-efficient smart refrigerator",
+    "price": 1499.99,
+    "inventory_status": "Low Stock",
+    "supplier_id": "S003",
+    "last_updated": "2023-06-03T14:15:00Z"
+  },
+  {
+    "product_id": "P004",
+    "category": "Clothing",
+    "name": "Winter Jacket",
+    "description": "Warm winter jacket for extreme cold",
+    "price": 129.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S004",
+    "last_updated": "2023-06-04T11:45:00Z"
+  },
+  {
+    "product_id": "P005",
+    "category": "Books",
+    "name": "Data Engineering Handbook",
+    "description": "Comprehensive guide to data engineering",
+    "price": 49.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S005",
+    "last_updated": "2023-06-05T16:20:00Z"
+  },
+  {
+    "product_id": "P006",
+    "category": "Electronics",
+    "name": "Wireless Earbuds",
+    "description": "High-quality wireless earbuds with noise cancellation",
+    "price": 149.99,
+    "inventory_status": "Out of Stock",
+    "supplier_id": "S001",
+    "last_updated": "2023-06-06T08:10:00Z"
+  },
+  {
+    "product_id": "P007",
+    "category": "Home Appliances",
+    "name": "Robot Vacuum",
+    "description": "Smart robot vacuum with mapping technology",
+    "price": 349.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S003",
+    "last_updated": "2023-06-07T13:40:00Z"
+  },
+  {
+    "product_id": "P008",
+    "category": "Clothing",
+    "name": "Running Shoes",
+    "description": "Lightweight running shoes for athletes",
+    "price": 89.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S004",
+    "last_updated": "2023-06-08T15:30:00Z"
+  },
+  {
+    "product_id": "P009",
+    "category": "Books",
+    "name": "Cloud Computing Essentials",
+    "description": "Introduction to cloud computing technologies",
+    "price": 39.99,
+    "inventory_status": "In Stock",
+    "supplier_id": "S005",
+    "last_updated": "2023-06-09T10:25:00Z"
+  },
+  {
+    "product_id": "P010",
+    "category": "Electronics",
+    "name": "Smart Watch",
+    "description": "Fitness and health tracking smart watch",
+    "price": 199.99,
+    "inventory_status": "Low Stock",
+    "supplier_id": "S002",
+    "last_updated": "2023-06-10T09:15:00Z"
+  }
+]
