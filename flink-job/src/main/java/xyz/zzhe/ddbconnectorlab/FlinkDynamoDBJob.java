@@ -4,6 +4,9 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.factories.FactoryUtil;
+
+import xyz.zzhe.ddbconnectorlab.dynamodb.DynamoDBLookupTableSourceFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,6 +35,11 @@ public class FlinkDynamoDBJob {
         
         // Configure AWS region
         tableEnv.getConfig().getConfiguration().setString("aws.region", "ap-southeast-1");
+        
+        // Our custom DynamoDB lookup table source factory will be discovered automatically
+        // through the Java SPI mechanism (META-INF/services)
+        System.out.println("Using custom DynamoDB lookup table source factory: " +
+                DynamoDBLookupTableSourceFactory.IDENTIFIER);
         
         // Read and execute SQL statements
         String sqlScript = readSqlScript(sqlFilePath);

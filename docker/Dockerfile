@@ -18,7 +18,11 @@ RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/software/amazon/awssd
 # Set AWS region
 ENV AWS_REGION=ap-southeast-1
 
-# Copy SQL scripts
+# Copy SQL scripts and custom classes
 COPY ./flink-job/src/main/resources/flink-sql /opt/flink/sql
+COPY ./flink-job/target/classes /opt/flink/classes
+
+# Add custom classes to classpath
+ENV FLINK_CLASSPATH="/opt/flink/classes"
 
 WORKDIR /opt/flink

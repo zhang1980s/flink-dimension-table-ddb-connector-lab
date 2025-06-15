@@ -33,10 +33,9 @@ CREATE TABLE product_catalog (
   last_updated STRING,
   PRIMARY KEY (product_id) NOT ENFORCED
 ) WITH (
-  'connector' = 'dynamodb',
-  'table-name' = 'product_catalog',
+  'connector' = 'dynamodb-lookup',
+  'table-name' = 'product-catalog-43c2419',
   'aws.region' = 'ap-southeast-1',
-  'scan.parallelism' = '4',
   'lookup.cache.max-rows' = '10000',
   'lookup.cache.ttl' = '300000'
 );
