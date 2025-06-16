@@ -18,11 +18,10 @@ RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/software/amazon/awssd
 # Set AWS region
 ENV AWS_REGION=ap-southeast-1
 
-# Copy SQL scripts and custom classes
+# Copy SQL scripts
 COPY ./flink-job/src/main/resources/flink-sql /opt/flink/sql
-COPY ./flink-job/target/classes /opt/flink/classes
 
-# Add custom classes to classpath
-ENV FLINK_CLASSPATH="/opt/flink/classes"
+# Copy custom connector JAR to lib directory
+COPY ./flink-job/target/ddb-connector-lab-1.0-SNAPSHOT-connector.jar /opt/flink/lib/
 
 WORKDIR /opt/flink

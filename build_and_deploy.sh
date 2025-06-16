@@ -10,6 +10,12 @@ cd flink-job
 mvn clean package
 cd ..
 
+# Verify the connector JAR was created
+if [ ! -f "flink-job/target/ddb-connector-lab-1.0-SNAPSHOT-connector.jar" ]; then
+    echo "Error: Connector JAR was not created. Check the Maven build."
+    exit 1
+fi
+
 echo "Building Docker image..."
 docker build -t flink-ddb-connector -f docker/Dockerfile .
 

@@ -98,17 +98,21 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+            
+            <!-- Create main application JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
                 <executions>
                     <execution>
+                        <id>shade-main-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>flink-dynamodb-job</finalName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.apache.flink:force-shading</exclude>
@@ -133,6 +137,29 @@
                                     <mainClass>xyz.zzhe.ddbconnectorlab.FlinkDynamoDBJob</mainClass>
                                 </transformer>
                             </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Create connector JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>connector-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>connector</classifier>
+                            <includes>
+                                <include>xyz/zzhe/ddbconnectorlab/dynamodb/**</include>
+                                <include>META-INF/services/**</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
